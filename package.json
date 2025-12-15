@@ -1,0 +1,30 @@
+{
+  "name": "ecogestion-local",
+  "version": "1.0.0",
+  "description": "Sistema de gestión ecológica local - MVP con app móvil, backend y panel admin",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "admin-panel",
+    "mobile"
+  ],
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:admin": "cd admin-panel && npm start",
+    "dev:mobile": "cd mobile && npm start",
+    "build:backend": "cd backend && npm run build",
+    "build:admin": "cd admin-panel && npm run build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
+    "seed": "cd backend && npm run seed"
+  },
+  "keywords": [
+    "ecologia",
+    "reciclaje",
+    "sostenibilidad",
+    "gestion-residuos"
+  ],
+  "author": "System Eco-Friendly Team",
+  "license": "MIT"
+}
