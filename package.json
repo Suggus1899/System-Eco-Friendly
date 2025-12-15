@@ -1,0 +1,27 @@
+{
+  "name": "ecogestion-local",
+  "version": "1.0.0",
+  "description": "MVP EcoGestión Local - Eco-friendly waste management system",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "install:all": "npm install && cd packages/backend && npm install && cd ../admin-panel && npm install && cd ../mobile && npm install",
+    "dev:backend": "cd packages/backend && npm run dev",
+    "dev:admin": "cd packages/admin-panel && npm start",
+    "dev:mobile": "cd packages/mobile && npm start",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "seed": "cd packages/backend && npm run seed"
+  },
+  "keywords": [
+    "eco-friendly",
+    "waste-management",
+    "recycling",
+    "sustainability"
+  ],
+  "author": "EcoGestión Local Team",
+  "license": "Apache-2.0"
+}
