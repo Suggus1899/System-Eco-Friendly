@@ -14,7 +14,8 @@ const getAllMaterials = async (req, res, next) => {
     
     if (search) {
       params.push(`%${search}%`);
-      query += ` AND (name ILIKE $${params.length} OR description ILIKE $${params.length})`;
+      const searchIndex = params.length;
+      query += ` AND (name ILIKE $${searchIndex} OR description ILIKE $${searchIndex})`;
     }
     
     query += ' ORDER BY name ASC';

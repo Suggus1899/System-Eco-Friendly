@@ -1,7 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://localhost:3000/api'; // Change for production
+// Use environment variable or fallback to localhost for development
+const API_URL = process.env.API_URL || 'http://localhost:3000/api';
 
 const api = axios.create({
   baseURL: API_URL,
