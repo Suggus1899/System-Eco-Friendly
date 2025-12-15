@@ -149,9 +149,9 @@ const completeChallenge = async (req, res, next) => {
       if (progressResult.rows.length > 0) {
         await client.query(
           `UPDATE user_challenges 
-           SET progress = target_value, completed = true, completed_at = CURRENT_TIMESTAMP
-           WHERE user_id = $1 AND challenge_id = $2`,
-          [userId, id]
+           SET progress = $1, completed = true, completed_at = CURRENT_TIMESTAMP
+           WHERE user_id = $2 AND challenge_id = $3`,
+          [challenge.target_value || 1, userId, id]
         );
       } else {
         await client.query(

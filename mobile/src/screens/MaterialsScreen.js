@@ -18,6 +18,14 @@ function MaterialsScreen() {
     { key: 'electronico', label: 'Electrónico', icon: '🔌' }
   ];
 
+  // Create a category lookup map for better performance
+  const categoryMap = React.useMemo(() => {
+    return categories.reduce((map, cat) => {
+      map[cat.key] = cat;
+      return map;
+    }, {});
+  }, []);
+
   useEffect(() => {
     loadMaterials();
   }, []);
@@ -64,7 +72,7 @@ function MaterialsScreen() {
         <Text style={styles.materialName}>{item.name}</Text>
         {item.recyclable && <Text style={styles.recyclableBadge}>♻️ Reciclable</Text>}
       </View>
-      <Text style={styles.materialCategory}>{categories.find(c => c.key === item.category)?.label}</Text>
+      <Text style={styles.materialCategory}>{categoryMap[item.category]?.label || item.category}</Text>
       {item.description && (
         <Text style={styles.materialDescription}>{item.description}</Text>
       )}
