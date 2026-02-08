@@ -8,7 +8,9 @@ import Materials from './pages/Materials';
 import Centers from './pages/Centers';
 import Schedules from './pages/Schedules';
 import Challenges from './pages/Challenges';
+import Reports from './pages/Reports';
 import Sidebar from './components/Sidebar';
+import { NotificationProvider } from './components/NotificationProvider';
 
 import './styles/App.css';
 
@@ -18,30 +20,33 @@ function PrivateRoute({ children }) {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/*"
-          element={
-            <PrivateRoute>
-              <div className="app-container">
-                <Sidebar />
-                <div className="main-content">
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/materials" element={<Materials />} />
-                    <Route path="/centers" element={<Centers />} />
-                    <Route path="/schedules" element={<Schedules />} />
-                    <Route path="/challenges" element={<Challenges />} />
-                  </Routes>
+    <NotificationProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/*"
+            element={
+              <PrivateRoute>
+                <div className="app-container">
+                  <Sidebar />
+                  <div className="main-content">
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/materials" element={<Materials />} />
+                      <Route path="/centers" element={<Centers />} />
+                      <Route path="/schedules" element={<Schedules />} />
+                      <Route path="/challenges" element={<Challenges />} />
+                      <Route path="/reports" element={<Reports />} />
+                    </Routes>
+                  </div>
                 </div>
-              </div>
-            </PrivateRoute>
-          }
-        />
-      </Routes>
-    </Router>
+              </PrivateRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </NotificationProvider>
   );
 }
 

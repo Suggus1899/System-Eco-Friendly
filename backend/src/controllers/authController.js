@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const pool = require('../config/database');
+const { User } = require('../models');
 
 const register = async (req, res, next) => {
   try {
@@ -11,12 +11,9 @@ const register = async (req, res, next) => {
     }
     
     // Check if user exists
-    const existingUser = await pool.query(
-      'SELECT id FROM users WHERE email = $1',
-      [email]
-    );
+    const existingUser = await User.findOne({ where: { email } });
     
-    if (existingUser.rows.length > 0) {
+    if (existingUser) {
       return res.status(409).json({ error: 'User already exists' });
     }
     
@@ -24,12 +21,12 @@ const register = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     
     // Create user
-    const result = await pool.query(
-      'INSERT INTO users (email, password, name, zone) VALUES ($1, $2, $3, $4) RETURNING id, email, name, role, zone, points, created_at',
-      [email, hashedPassword, name, zone || null]
-    );
-    
-    const user = result.rows[0];
+    const user = await User.create({
+      email,
+      password: hashedPassword,
+      name,
+      zone: zone || null
+    });
     
     // Generate token
     const token = jwt.sign(
@@ -64,16 +61,11 @@ const login = async (req, res, next) => {
     }
     
     // Find user
-    const result = await pool.query(
-      'SELECT id, email, password, name, role, zone, points FROM users WHERE email = $1',
-      [email]
-    );
+    const user = await User.findOne({ where: { email } });
     
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    
-    const user = result.rows[0];
     
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);

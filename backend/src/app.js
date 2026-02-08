@@ -13,6 +13,8 @@ const centersRoutes = require('./routes/centers');
 const schedulesRoutes = require('./routes/schedules');
 const challengesRoutes = require('./routes/challenges');
 const usersRoutes = require('./routes/users');
+const remindersRoutes = require('./routes/reminders');
+const exportRoutes = require('./routes/export');
 
 const app = express();
 
@@ -35,6 +37,8 @@ app.use('/api/centers', centersRoutes);
 app.use('/api/schedules', schedulesRoutes);
 app.use('/api/challenges', challengesRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/reminders', remindersRoutes);
+app.use('/api/export', exportRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

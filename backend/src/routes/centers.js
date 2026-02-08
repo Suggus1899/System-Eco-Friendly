@@ -9,12 +9,14 @@ const {
   deleteCenter
 } = require('../controllers/centersController');
 const { authMiddleware, isAdmin } = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { createCenterSchema, updateCenterSchema } = require('../schemas/centersSchemas');
 
 router.get('/', getAllCenters);
 router.get('/nearby', getNearbyCenters);
 router.get('/:id', getCenterById);
-router.post('/', authMiddleware, isAdmin, createCenter);
-router.put('/:id', authMiddleware, isAdmin, updateCenter);
+router.post('/', authMiddleware, isAdmin, validate(createCenterSchema), createCenter);
+router.put('/:id', authMiddleware, isAdmin, validate(updateCenterSchema), updateCenter);
 router.delete('/:id', authMiddleware, isAdmin, deleteCenter);
 
 module.exports = router;

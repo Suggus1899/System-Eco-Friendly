@@ -1,27 +1,44 @@
-const pool = require('../config/database');
+const { Material } = require('../models');
+const { Op } = require('sequelize');
+const { getPaginationMetadata } = require('../utils/pagination');
 
 const getAllMaterials = async (req, res, next) => {
   try {
-    const { category, search } = req.query;
+    const { category, search, page: pageQuery, limit: limitQuery, sort, order } = req.query;
     
-    let query = 'SELECT * FROM materials WHERE 1=1';
-    const params = [];
-    
+    // Pagination defaults
+    const page = parseInt(pageQuery) || 1;
+    const limit = parseInt(limitQuery) || 20;
+    const offset = (page - 1) * limit;
+
+    // Filters
+    const where = {};
     if (category) {
-      params.push(category);
-      query += ` AND category = $${params.length}`;
+      where.category = category;
     }
-    
+
     if (search) {
-      params.push(`%${search}%`);
-      const searchIndex = params.length;
-      query += ` AND (name ILIKE $${searchIndex} OR description ILIKE $${searchIndex})`;
+      where[Op.or] = [
+        { name: { [Op.like]: `%${search}%` } },
+        { description: { [Op.like]: `%${search}%` } }
+      ];
     }
-    
-    query += ' ORDER BY name ASC';
-    
-    const result = await pool.query(query, params);
-    res.json(result.rows);
+
+    // Sorting
+    const allowedSortFields = ['name', 'category', 'createdAt', 'updatedAt'];
+    const sortField = allowedSortFields.includes(sort) ? sort : 'name';
+    const sortOrder = order === 'DESC' ? 'DESC' : 'ASC';
+
+    const { count, rows } = await Material.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [[sortField, sortOrder]]
+    });
+
+    const meta = getPaginationMetadata(count, page, limit);
+
+    res.json({ data: rows, meta });
   } catch (error) {
     next(error);
   }
@@ -30,13 +47,13 @@ const getAllMaterials = async (req, res, next) => {
 const getMaterialById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('SELECT * FROM materials WHERE id = $1', [id]);
-    
-    if (result.rows.length === 0) {
+    const material = await Material.findByPk(id);
+
+    if (!material) {
       return res.status(404).json({ error: 'Material not found' });
     }
-    
-    res.json(result.rows[0]);
+
+    res.json(material);
   } catch (error) {
     next(error);
   }
@@ -45,18 +62,20 @@ const getMaterialById = async (req, res, next) => {
 const createMaterial = async (req, res, next) => {
   try {
     const { name, category, description, disposal_instructions, recyclable, image_url } = req.body;
+
+    // Validation is handled by middleware, but check required fields here too if needed
+    // Assuming schema validation is passed
     
-    if (!name || !category) {
-      return res.status(400).json({ error: 'Name and category are required' });
-    }
-    
-    const result = await pool.query(
-      `INSERT INTO materials (name, category, description, disposal_instructions, recyclable, image_url)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [name, category, description, disposal_instructions, recyclable ?? true, image_url]
-    );
-    
-    res.status(201).json(result.rows[0]);
+    const material = await Material.create({
+      name,
+      category,
+      description,
+      disposal_instructions,
+      recyclable: recyclable ?? true,
+      image_url
+    });
+
+    res.status(201).json(material);
   } catch (error) {
     next(error);
   }
@@ -65,26 +84,17 @@ const createMaterial = async (req, res, next) => {
 const updateMaterial = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, category, description, disposal_instructions, recyclable, image_url } = req.body;
-    
-    const result = await pool.query(
-      `UPDATE materials 
-       SET name = COALESCE($1, name),
-           category = COALESCE($2, category),
-           description = COALESCE($3, description),
-           disposal_instructions = COALESCE($4, disposal_instructions),
-           recyclable = COALESCE($5, recyclable),
-           image_url = COALESCE($6, image_url)
-       WHERE id = $7
-       RETURNING *`,
-      [name, category, description, disposal_instructions, recyclable, image_url, id]
-    );
-    
-    if (result.rows.length === 0) {
+    const updateData = req.body;
+
+    const material = await Material.findByPk(id);
+
+    if (!material) {
       return res.status(404).json({ error: 'Material not found' });
     }
-    
-    res.json(result.rows[0]);
+
+    await material.update(updateData);
+
+    res.json(material);
   } catch (error) {
     next(error);
   }
@@ -93,12 +103,14 @@ const updateMaterial = async (req, res, next) => {
 const deleteMaterial = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('DELETE FROM materials WHERE id = $1 RETURNING id', [id]);
-    
-    if (result.rows.length === 0) {
+    const material = await Material.findByPk(id);
+
+    if (!material) {
       return res.status(404).json({ error: 'Material not found' });
     }
-    
+
+    await material.destroy();
+
     res.json({ message: 'Material deleted successfully' });
   } catch (error) {
     next(error);

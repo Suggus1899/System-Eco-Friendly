@@ -21,7 +21,8 @@ function Materials() {
   const loadMaterials = async () => {
     try {
       const response = await materialsService.getAll();
-      setMaterials(response.data);
+      // Backend now returns { data: [...], meta: {...} }
+      setMaterials(response.data.data || []);
       setLoading(false);
     } catch (error) {
       console.error('Error loading materials:', error);

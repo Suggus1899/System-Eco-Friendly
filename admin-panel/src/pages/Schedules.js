@@ -22,7 +22,8 @@ function Schedules() {
   const loadSchedules = async () => {
     try {
       const response = await schedulesService.getAll();
-      setSchedules(response.data);
+      // Backend now returns { data: [...], meta: {...} }
+      setSchedules(response.data.data || []);
       setLoading(false);
     } catch (error) {
       console.error('Error loading schedules:', error);

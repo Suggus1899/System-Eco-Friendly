@@ -24,7 +24,8 @@ function Challenges() {
   const loadChallenges = async () => {
     try {
       const response = await challengesService.getAll();
-      setChallenges(response.data);
+      // Backend now returns { data: [...], meta: {...} }
+      setChallenges(response.data.data || []);
       setLoading(false);
     } catch (error) {
       console.error('Error loading challenges:', error);

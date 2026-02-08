@@ -1,18 +1,27 @@
-const { Pool } = require('pg');
-require('dotenv').config();
+const { Sequelize } = require('sequelize');
+const path = require('path');
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+// Initialize Sequelize with SQLite
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: path.join(__dirname, '../../database.sqlite'), // Store DB in backend root
+  logging: false, // Set to console.log to see SQL queries
+  define: {
+    timestamps: true, // Add createdAt and updatedAt to all models
+    underscored: true // Use snake_case for fields (created_at)
+  }
 });
 
-pool.on('connect', () => {
-  console.log('✓ Database connected successfully');
-});
+// Test connection
+const testConnection = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('✓ SQLite database connected successfully');
+  } catch (error) {
+    console.error('❌ Unable to connect to the database:', error);
+  }
+};
 
-pool.on('error', (err) => {
-  console.error('Database connection error:', err);
-  process.exit(-1);
-});
+testConnection();
 
-module.exports = pool;
+module.exports = sequelize;

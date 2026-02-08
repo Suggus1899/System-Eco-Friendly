@@ -1,19 +1,19 @@
-const pool = require('../config/database');
+const { User, UserChallenge, Challenge, Badge, UserBadge } = require('../models');
+const { Op } = require('sequelize');
 
 const getProfile = async (req, res, next) => {
   try {
     const userId = req.user.id;
     
-    const result = await pool.query(
-      'SELECT id, email, name, role, zone, points, created_at FROM users WHERE id = $1',
-      [userId]
-    );
+    const user = await User.findByPk(userId, {
+      attributes: ['id', 'email', 'name', 'role', 'zone', 'points', 'created_at']
+    });
     
-    if (result.rows.length === 0) {
+    if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    res.json(result.rows[0]);
+    res.json(user);
   } catch (error) {
     next(error);
   }
@@ -23,36 +23,46 @@ const getProgress = async (req, res, next) => {
   try {
     const userId = req.user.id;
     
-    // Get user points
-    const userResult = await pool.query(
-      'SELECT points FROM users WHERE id = $1',
-      [userId]
-    );
-    
-    if (userResult.rows.length === 0) {
+    const user = await User.findByPk(userId);
+    if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
-    // Get completed challenges count
-    const challengesResult = await pool.query(
-      'SELECT COUNT(*) as completed_challenges FROM user_challenges WHERE user_id = $1 AND completed = true',
-      [userId]
-    );
-    
-    // Get in-progress challenges
-    const inProgressResult = await pool.query(
-      `SELECT c.*, uc.progress, uc.completed 
-       FROM challenges c
-       JOIN user_challenges uc ON c.id = uc.challenge_id
-       WHERE uc.user_id = $1 AND uc.completed = false
-       ORDER BY c.end_date ASC`,
-      [userId]
-    );
+
+    const completedChallengesCount = await UserChallenge.count({
+      where: {
+        user_id: userId,
+        completed: true
+      }
+    });
+
+    const inProgressChallenges = await Challenge.findAll({
+      include: [{
+        model: UserChallenge,
+        where: {
+          user_id: userId,
+          completed: false
+        },
+        attributes: ['progress', 'completed']
+      }],
+      order: [['end_date', 'ASC']]
+    });
+
+    // Formatting the response to match previous structure
+    const challenges = inProgressChallenges.map(c => {
+      const json = c.toJSON();
+      const uc = json.UserChallenges[0];
+      return {
+        ...json,
+        progress: uc.progress,
+        completed: uc.completed,
+        UserChallenges: undefined // cleanup
+      };
+    });
     
     res.json({
-      points: userResult.rows[0].points,
-      completed_challenges: parseInt(challengesResult.rows[0].completed_challenges),
-      in_progress_challenges: inProgressResult.rows
+      points: user.points,
+      completed_challenges: completedChallengesCount,
+      in_progress_challenges: challenges
     });
   } catch (error) {
     next(error);
@@ -63,16 +73,29 @@ const getBadges = async (req, res, next) => {
   try {
     const userId = req.user.id;
     
-    const result = await pool.query(
-      `SELECT b.*, ub.earned_at 
-       FROM badges b
-       JOIN user_badges ub ON b.id = ub.badge_id
-       WHERE ub.user_id = $1
-       ORDER BY ub.earned_at DESC`,
-      [userId]
-    );
+    const badges = await Badge.findAll({
+      include: [{
+        model: UserBadge,
+        where: { user_id: userId },
+        attributes: ['earned_at'] // Include earned_at from junction table
+      }],
+      order: [[UserBadge, 'earned_at', 'DESC']]
+    });
+
+    // Flatten structure if needed or keep as is. 
+    // Sequelize returns: Badge { ..., UserBadges: [ { earned_at: ... } ] }
+    // The raw query returned flat badges with earned_at.
+    const result = badges.map(b => {
+      const json = b.toJSON();
+      const earnedAt = json.UserBadges[0].earned_at;
+      return {
+        ...json,
+        earned_at: earnedAt,
+        UserBadges: undefined
+      };
+    });
     
-    res.json(result.rows);
+    res.json(result);
   } catch (error) {
     next(error);
   }
@@ -83,16 +106,21 @@ const updateProfile = async (req, res, next) => {
     const userId = req.user.id;
     const { name, zone } = req.body;
     
-    const result = await pool.query(
-      `UPDATE users 
-       SET name = COALESCE($1, name),
-           zone = COALESCE($2, zone)
-       WHERE id = $3
-       RETURNING id, email, name, role, zone, points`,
-      [name, zone, userId]
-    );
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
     
-    res.json(result.rows[0]);
+    await user.update({ name, zone });
+    
+    res.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      zone: user.zone,
+      points: user.points
+    });
   } catch (error) {
     next(error);
   }
