@@ -1,16 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useAtom, useSetAtom } from 'jotai';
 import { usersService } from '../services/api';
+import { userAtom, userProgressAtom, userLoadingAtom } from '../store/atoms';
 
 function HomeScreen({ navigation }) {
-  const [user, setUser] = useState(null);
-  const [progress, setProgress] = useState(null);
+  const [user, setUser] = useAtom(userAtom);
+  const [progress, setProgress] = useAtom(userProgressAtom);
+  const [loading, setLoading] = useAtom(userLoadingAtom);
 
   useEffect(() => {
     loadUserData();
   }, []);
 
+  const navigateToMaterials = React.useCallback(() => navigation.navigate('Materials'), [navigation]);
+  const navigateToMap = React.useCallback(() => navigation.navigate('Map'), [navigation]);
+  const navigateToSchedule = React.useCallback(() => navigation.navigate('Schedule'), [navigation]);
+  const navigateToChallenges = React.useCallback(() => navigation.navigate('Challenges'), [navigation]);
+
   const loadUserData = async () => {
+    setLoading(true);
     try {
       const [profileRes, progressRes] = await Promise.all([
         usersService.getProfile(),
@@ -20,6 +29,8 @@ function HomeScreen({ navigation }) {
       setProgress(progressRes.data);
     } catch (error) {
       console.error('Error loading user data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,33 +42,33 @@ function HomeScreen({ navigation }) {
       </View>
 
       <View style={styles.quickActions}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.actionCard, { backgroundColor: '#3498db' }]}
-          onPress={() => navigation.navigate('Materials')}
+          onPress={navigateToMaterials}
         >
           <Text style={styles.actionIcon}>♻️</Text>
           <Text style={styles.actionText}>Guía de Separación</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.actionCard, { backgroundColor: '#27ae60' }]}
-          onPress={() => navigation.navigate('Map')}
+          onPress={navigateToMap}
         >
           <Text style={styles.actionIcon}>📍</Text>
           <Text style={styles.actionText}>Centros de Reciclaje</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.actionCard, { backgroundColor: '#e74c3c' }]}
-          onPress={() => navigation.navigate('Schedule')}
+          onPress={navigateToSchedule}
         >
           <Text style={styles.actionIcon}>📅</Text>
           <Text style={styles.actionText}>Mi Calendario</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.actionCard, { backgroundColor: '#f39c12' }]}
-          onPress={() => navigation.navigate('Challenges')}
+          onPress={navigateToChallenges}
         >
           <Text style={styles.actionIcon}>🎯</Text>
           <Text style={styles.actionText}>Retos Semanales</Text>

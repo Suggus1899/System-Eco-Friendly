@@ -1,22 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { materialsService, offlineStorage } from '../services/api';
+import { 
+  materialsAtom, 
+  filteredMaterialsAtom, 
+  searchQueryAtom, 
+  selectedCategoryAtom, 
+  materialsLoadingAtom,
+  categoriesAtom
+} from '../store/atoms';
 
 function MaterialsScreen() {
-  const [materials, setMaterials] = useState([]);
-  const [filteredMaterials, setFilteredMaterials] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [loading, setLoading] = useState(true);
-
-  const categories = [
-    { key: 'all', label: 'Todos', icon: '📦' },
-    { key: 'organico', label: 'Orgánico', icon: '🥬' },
-    { key: 'plastico', label: 'Plástico', icon: '♻️' },
-    { key: 'vidrio', label: 'Vidrio', icon: '🫙' },
-    { key: 'papel', label: 'Papel', icon: '📄' },
-    { key: 'electronico', label: 'Electrónico', icon: '🔌' }
-  ];
+  const [materials] = useAtom(materialsAtom);
+  const filteredMaterials = useAtomValue(filteredMaterialsAtom);
+  const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
+  const [selectedCategory, setSelectedCategory] = useAtom(selectedCategoryAtom);
+  const [loading, setLoading] = useAtom(materialsLoadingAtom);
+  const categories = useAtomValue(categoriesAtom);
 
   // Create a category lookup map for better performance
   const categoryMap = React.useMemo(() => {
@@ -24,49 +26,31 @@ function MaterialsScreen() {
       map[cat.key] = cat;
       return map;
     }, {});
-  }, []);
+  }, [categories]);
 
   useEffect(() => {
     loadMaterials();
   }, []);
 
-  useEffect(() => {
-    filterMaterials();
-  }, [searchQuery, selectedCategory, materials]);
+  const setMaterials = useSetAtom(materialsAtom);
 
   const loadMaterials = async () => {
+    setLoading(true);
     try {
       const response = await materialsService.getAll();
       setMaterials(response.data);
       await offlineStorage.saveMaterials(response.data);
-      setLoading(false);
     } catch (error) {
       console.error('Error loading materials:', error);
       // Load from offline storage
       const offlineMaterials = await offlineStorage.getMaterials();
       setMaterials(offlineMaterials);
+    } finally {
       setLoading(false);
     }
   };
 
-  const filterMaterials = () => {
-    let filtered = materials;
-
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(m => m.category === selectedCategory);
-    }
-
-    if (searchQuery) {
-      filtered = filtered.filter(m => 
-        m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    setFilteredMaterials(filtered);
-  };
-
-  const renderMaterial = ({ item }) => (
+  const renderMaterial = React.useCallback(({ item }) => (
     <View style={styles.materialCard}>
       <View style={styles.materialHeader}>
         <Text style={styles.materialName}>{item.name}</Text>
@@ -83,7 +67,7 @@ function MaterialsScreen() {
         </View>
       )}
     </View>
-  );
+  ), [categoryMap]);
 
   if (loading) {
     return (
@@ -105,7 +89,7 @@ function MaterialsScreen() {
       </View>
 
       <View style={styles.categoriesContainer}>
-        <FlatList
+        <FlashList
           horizontal
           data={categories}
           keyExtractor={item => item.key}
@@ -127,10 +111,11 @@ function MaterialsScreen() {
               </Text>
             </TouchableOpacity>
           )}
+          estimatedItemSize={120}
         />
       </View>
 
-      <FlatList
+      <FlashList
         data={filteredMaterials}
         keyExtractor={item => item.id.toString()}
         renderItem={renderMaterial}
@@ -138,6 +123,7 @@ function MaterialsScreen() {
         ListEmptyComponent={
           <Text style={styles.emptyText}>No se encontraron materiales</Text>
         }
+        estimatedItemSize={150}
       />
     </View>
   );

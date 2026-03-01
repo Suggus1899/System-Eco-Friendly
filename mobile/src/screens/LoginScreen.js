@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSetAtom } from 'jotai';
 import { authService } from '../services/api';
+import { userAtom } from '../store/atoms';
 
 function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const setUser = useSetAtom(userAtom);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -21,6 +24,9 @@ function LoginScreen({ navigation }) {
 
       await AsyncStorage.setItem('token', token);
       await AsyncStorage.setItem('user', JSON.stringify(user));
+      
+      // Update global user state
+      setUser(user);
 
       navigation.replace('Main');
     } catch (error) {

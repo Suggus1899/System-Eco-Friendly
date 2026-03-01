@@ -4,10 +4,15 @@
  */
 
 import React from 'react';
+import { Provider } from 'jotai';
 import AppNavigator from './src/navigation/AppNavigator';
 
 function App() {
-  return <AppNavigator />;
+  return (
+    <Provider>
+      <AppNavigator />
+    </Provider>
+  );
 }
 
 export default App;
