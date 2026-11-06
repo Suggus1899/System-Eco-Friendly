@@ -1,0 +1,29 @@
+{
+  "name": "ecogestion-local",
+  "version": "1.0.0",
+  "description": "Sistema de gestión ecológica local - Backend y Panel Admin",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "admin-panel"
+  ],
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:admin": "cd admin-panel && npm start",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:admin\"",
+    "build:backend": "cd backend && npm run build",
+    "build:admin": "cd admin-panel && npm run build",
+    "seed": "cd backend && npm run seed"
+  },
+  "keywords": [
+    "ecologia",
+    "reciclaje",
+    "sostenibilidad",
+    "gestion-residuos"
+  ],
+  "author": "System Eco-Friendly Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

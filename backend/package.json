@@ -1,0 +1,38 @@
+{
+  "name": "ecogestion-backend",
+  "version": "1.0.0",
+  "description": "Backend API para EcoGestión Local",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed": "node scripts/seed_sqlite.js",
+    "test": "jest"
+  },
+  "keywords": [
+    "api",
+    "ecologia",
+    "reciclaje"
+  ],
+  "author": "System Eco-Friendly Team",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "joi": "^18.0.2",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "node-cron": "^3.0.3",
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "supertest": "^7.2.2"
+  }
+}
