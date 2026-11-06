@@ -70,3 +70,9 @@ local.properties
 tmp/
 temp/
 *.tmp
+
+# Local agent skill files
+.agent/skills/react-native-best-practices/
+.agents/skills/react-native-best-practices/
+.kiro/skills/react-native-best-practices/
+.qwen/skills/react-native-best-practices/
