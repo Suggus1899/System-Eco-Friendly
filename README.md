@@ -51,7 +51,7 @@ EcoGestión Local es una plataforma para promover la separación y gestión resp
    npm run seed
    ```
 
-La base de datos se crea como `backend/database.sqlite` al iniciar el backend. No incluyas archivos `.env` ni la base de datos en commits.
+La base de datos se crea como `backend/database.sqlite` al iniciar el backend. No incluyas archivos `.env` ni la base de datos en commits. Antes de ejecutar `npm run seed`, define `SEED_PASSWORD` con una contraseña temporal de al menos 12 caracteres.
 
 ## Comandos principales
 
@@ -63,6 +63,7 @@ npm run dev:backend   # Solo backend
 npm run dev:admin     # Solo panel administrativo
 npm run build:backend
 npm run build:admin
+npm test
 npm run seed
 ```
 
@@ -96,7 +97,6 @@ Las operaciones protegidas requieren un token JWT en la cabecera `Authorization`
 backend/       API, modelos Sequelize, SQLite y pruebas
 admin-panel/   Panel web React
 mobile/        Aplicación React Native
-packages/      Paquetes compartidos o auxiliares
 ```
 
 ## Contribución

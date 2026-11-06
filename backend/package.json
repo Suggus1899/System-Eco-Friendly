@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "build": "node --check src/server.js",
     "seed": "node scripts/seed_sqlite.js",
     "test": "jest"
   },

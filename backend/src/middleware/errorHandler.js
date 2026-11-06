@@ -8,14 +8,14 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  if (err.code === '23505') { // PostgreSQL unique violation
+  if (err.name === 'SequelizeUniqueConstraintError') {
     return res.status(409).json({
       error: 'Duplicate entry',
       message: 'A record with this value already exists'
     });
   }
 
-  if (err.code === '23503') { // PostgreSQL foreign key violation
+  if (err.name === 'SequelizeForeignKeyConstraintError') {
     return res.status(400).json({
       error: 'Invalid reference',
       message: 'Referenced record does not exist'

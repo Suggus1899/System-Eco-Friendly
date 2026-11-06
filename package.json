@@ -13,6 +13,9 @@
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:admin\"",
     "build:backend": "cd backend && npm run build",
     "build:admin": "cd admin-panel && npm run build",
+    "test:backend": "cd backend && npm test -- --runInBand",
+    "test:admin": "cd admin-panel && CI=true npm test -- --watchAll=false --passWithNoTests",
+    "test": "npm run test:backend && npm run test:admin",
     "seed": "cd backend && npm run seed"
   },
   "keywords": [

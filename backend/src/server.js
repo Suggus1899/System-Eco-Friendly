@@ -6,6 +6,10 @@ const PORT = process.env.PORT || 3000;
 // Sync Database and Start Server
 const startServer = async () => {
   try {
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+      throw new Error('JWT_SECRET must be configured with at least 32 characters');
+    }
+
     await sequelize.sync({ alter: false }); // Set to true if you want to update schema, but be careful in production
     console.log('✓ Database synchronized');
     

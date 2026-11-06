@@ -3,6 +3,11 @@ const bcrypt = require('bcryptjs');
 
 async function seed() {
   try {
+    const seedPassword = process.env.SEED_PASSWORD;
+    if (!seedPassword || seedPassword.length < 12) {
+      throw new Error('SEED_PASSWORD must be set and contain at least 12 characters');
+    }
+
     console.log('🌱 Starting database seeding (SQLite)...');
     
     // Sync database (force: true drops tables)
@@ -11,13 +16,13 @@ async function seed() {
 
     // 1. Seed Users
     console.log('📝 Seeding users...');
-    const hashedPassword = await bcrypt.hash('password123', 10);
+    const hashedPassword = await bcrypt.hash(seedPassword, 10);
     
     await User.bulkCreate([
-      { email: 'admin@ecogestion.com', password: hashedPassword, name: 'Administrador', role: 'admin', zone: 'Centro', points: 500 },
-      { email: 'usuario1@example.com', password: hashedPassword, name: 'María González', role: 'user', zone: 'Norte', points: 150 },
-      { email: 'usuario2@example.com', password: hashedPassword, name: 'Juan Pérez', role: 'user', zone: 'Sur', points: 200 },
-      { email: 'usuario3@example.com', password: hashedPassword, name: 'Ana Rodríguez', role: 'user', zone: 'Este', points: 80 }
+      { email: 'admin@example.invalid', password: hashedPassword, name: 'Administrador', role: 'admin', zone: 'Centro', points: 500 },
+      { email: 'usuario1@example.invalid', password: hashedPassword, name: 'Usuario Norte', role: 'user', zone: 'Norte', points: 150 },
+      { email: 'usuario2@example.invalid', password: hashedPassword, name: 'Usuario Sur', role: 'user', zone: 'Sur', points: 200 },
+      { email: 'usuario3@example.invalid', password: hashedPassword, name: 'Usuario Este', role: 'user', zone: 'Este', points: 80 }
     ]);
     
     // 2. Seed Materials

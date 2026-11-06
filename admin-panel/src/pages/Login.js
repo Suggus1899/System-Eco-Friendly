@@ -70,7 +70,7 @@ function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="admin@ecogestion.com"
+              placeholder="correo de administrador"
               autoComplete="email"
             />
           </div>
@@ -110,9 +110,6 @@ function Login() {
           </button>
         </form>
 
-        <div className="login-hint">
-          <strong>Demo:</strong> admin@ecogestion.com / password123
-        </div>
       </div>
     </div>
   );
